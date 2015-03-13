@@ -1,5 +1,6 @@
 package com.example.rolf.sunshine;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -13,11 +14,15 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.helper.StaticLabelsFormatter;
+import com.jjoe64.graphview.series.BarGraphSeries;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
@@ -75,18 +80,22 @@ public class ForecastFragment extends Fragment {
         return super.onOptionsItemSelected(item);
     }
 
-    String[] forecastArray = {
-            "   Press menu Refresh for retrieving weather data",
-            " ", " ", " ", " ", " ", " "
-    };
-
-    int[] tempArray = {-3,-2,3,4,3,2,1};  // to be filled with actual temperatures later - for BarGraph
+    String[] forecastArray = {"   Press menu Refresh for retrieving weather data",
+            " ", " ", " ", " ", " ", " "};
+    double[] tempArray = {-3,-2,3,4,3,2,1};  // to be filled with actual temperatures later - for Graph
+    double[] precipArray = {1,0,0,2,5,3,3};
+    String[] dayNameArray = {"a","b","c","4","5","6","7"};
+    DataPoint[] tempPoint;
+    DataPoint[] precipPoint;
 
 
     //ArrayList<DayWeather> dayWeatherList = new ArrayList<DayWeather>();
 
     ArrayAdapter<String> myForecastAdapter;
 
+    GraphView diagr;
+    LineGraphSeries<DataPoint> series;
+    BarGraphSeries<DataPoint> series2;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -104,6 +113,18 @@ public class ForecastFragment extends Fragment {
 
         ListView listView = (ListView) rootView.findViewById(R.id.listview_forecast);
         listView.setAdapter(myForecastAdapter);
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                //Toast.makeText(getActivity().getApplicationContext(),"list id = " + id, Toast.LENGTH_SHORT).show();
+                String forecast =myForecastAdapter.getItem(position);
+                Intent intent = new Intent(getActivity().getApplicationContext(), DetailActivity.class)
+                        .putExtra(Intent.EXTRA_TEXT, forecast);
+                startActivity(intent);
+            }
+        });
+
 /* Old Graph with achartenginge
         BarGraph barGraph = new BarGraph(tempArray);
         GraphicalView graphicalView = barGraph.getView(getActivity().getApplicationContext());
@@ -113,17 +134,22 @@ public class ForecastFragment extends Fragment {
         graphicalView.repaint();
 */
         // New graph with GraphView
-        GraphView diagr = (GraphView) rootView.findViewById(R.id.diagr);
-        DataPoint[] tempPoint = new DataPoint[tempArray.length];
+        diagr = (GraphView) rootView.findViewById(R.id.diagr);
+        tempPoint = new DataPoint[tempArray.length];
+        precipPoint = new DataPoint[precipArray.length];
         for (int i = 0; i < tempArray.length; i++) {
             tempPoint[i] = new DataPoint( i, tempArray[i] );
+            precipPoint[i] = new DataPoint( i, precipArray[i] );
         }
-        LineGraphSeries<DataPoint> series = new LineGraphSeries<DataPoint>(tempPoint);
+        series2 = new BarGraphSeries<>(precipPoint);
+        series = new LineGraphSeries<>(tempPoint);
         //series.setBackgroundColor(Color.GREEN);
         //series.setDrawBackground(true);
-        series.setColor(Color.rgb(255, 200, 0));
-        series.setThickness(10);
+        series.setColor(Color.rgb(250, 200, 0));
+        series2.setColor(Color.argb(60, 0, 0, 255) );
+        series.setThickness(8);
 
+        diagr.addSeries(series2);
         diagr.addSeries(series);
         //diagr.setBackgroundColor(Color.GREEN);
         diagr.getViewport().setMinY(series.getLowestValueY()-2);
@@ -132,6 +158,8 @@ public class ForecastFragment extends Fragment {
         diagr.getViewport().setXAxisBoundsManual(true);
         diagr.getViewport().setYAxisBoundsManual(true);
         //diagr.getGridLabelRenderer().set bla bla
+        StaticLabelsFormatter labels = new StaticLabelsFormatter(diagr);
+        labels.setHorizontalLabels(dayNameArray);
 
         return rootView;
     }
@@ -224,7 +252,6 @@ public class ForecastFragment extends Fragment {
                 Time dayTime = new Time();
                 dayTime.setToNow();  // ?? what happens here and why, later a new object is created
                 int julianStartDay = Time.getJulianDay(System.currentTimeMillis(), dayTime.gmtoff); // ??
-
                 dayTime = new Time();
 
                 for(int i = 0; i < allDaysJsonArray.length(); i++) {
@@ -233,7 +260,8 @@ public class ForecastFragment extends Fragment {
 
                     JSONObject jsonTemperatureObject = jsonDayWeather.getJSONObject("temp");
                     String tempDay = jsonTemperatureObject.getString("day");
-                    Double tempDayDouble = Double.parseDouble(tempDay);
+                    double tempDayDouble = Double.parseDouble(tempDay);
+                    tempArray[i] = Math.round(tempDayDouble*10)/10;
                     long tempDayRounded = Math.round(tempDayDouble);
 
                     // the weather description is hidden in another array with keyword "weather"
@@ -254,6 +282,9 @@ public class ForecastFragment extends Fragment {
                     //dayWeatherList.add(dayWeather);
                     forecastArray[i] = " " + day + ":  " + description + ", " + tempDayRounded + "°C";
 
+                }
+                for (int i = 0; i < numDays; i++) {
+                    tempPoint[i] = new DataPoint( i, tempArray[i] );
                 }
 
                 return forecastArray;
@@ -292,6 +323,9 @@ public class ForecastFragment extends Fragment {
                     // this is, what ultimately triggers the ListView zu update
                     myForecastAdapter.add(day);
                 }
+                series.resetData(tempPoint);
+                diagr.getViewport().setMinY(Math.floor(series.getLowestValueY() - 2));
+                diagr.getViewport().setMaxY(Math.ceil(series.getHighestValueY()+2));
             }
             super.onPostExecute(result);
         }
