@@ -13,15 +13,22 @@
         android:layout_weight="1"
         android:id="@+id/listview_forecast"
         android:layout_gravity="center" />
+    <!--
+        <LinearLayout
+            android:id="@+id/bar_graph"
+            android:padding="20dp"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:orientation="vertical"
+            android:background="@android:color/white">
+        </LinearLayout>
+        -->
 
-    <LinearLayout
-        android:id="@+id/bar_graph"
-        android:padding="20dp"
-        android:layout_width="match_parent"
-        android:layout_height="120dp"
-        android:orientation="vertical"
-        android:background="@android:color/white">
+        <com.jjoe64.graphview.GraphView
+            android:padding="20dp"
+            android:layout_width="match_parent"
+            android:layout_height="120dip"
+            android:id="@+id/diagr" />
+
     </LinearLayout>
-
-</LinearLayout>
 

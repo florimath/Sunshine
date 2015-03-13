@@ -17,6 +17,10 @@ import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 
+import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.series.DataPoint;
+import com.jjoe64.graphview.series.LineGraphSeries;
+
 import org.achartengine.GraphicalView;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -100,13 +104,34 @@ public class ForecastFragment extends Fragment {
 
         ListView listView = (ListView) rootView.findViewById(R.id.listview_forecast);
         listView.setAdapter(myForecastAdapter);
-
+/* Old Graph with achartenginge
         BarGraph barGraph = new BarGraph(tempArray);
         GraphicalView graphicalView = barGraph.getView(getActivity().getApplicationContext());
         LinearLayout layout = (LinearLayout) rootView.findViewById(R.id.bar_graph);
         layout.addView(graphicalView);
         graphicalView.setBackgroundColor(Color.RED);
         graphicalView.repaint();
+*/
+        // New graph with GraphView
+        GraphView diagr = (GraphView) rootView.findViewById(R.id.diagr);
+        DataPoint[] tempPoint = new DataPoint[tempArray.length];
+        for (int i = 0; i < tempArray.length; i++) {
+            tempPoint[i] = new DataPoint( i, tempArray[i] );
+        }
+        LineGraphSeries<DataPoint> series = new LineGraphSeries<DataPoint>(tempPoint);
+        //series.setBackgroundColor(Color.GREEN);
+        //series.setDrawBackground(true);
+        series.setColor(Color.rgb(255, 200, 0));
+        series.setThickness(10);
+
+        diagr.addSeries(series);
+        //diagr.setBackgroundColor(Color.GREEN);
+        diagr.getViewport().setMinY(series.getLowestValueY()-2);
+        diagr.getViewport().setMaxY(series.getHighestValueY()+2);
+        diagr.getViewport().setMaxX(6d);
+        diagr.getViewport().setXAxisBoundsManual(true);
+        diagr.getViewport().setYAxisBoundsManual(true);
+        //diagr.getGridLabelRenderer().set bla bla
 
         return rootView;
     }
@@ -128,6 +153,7 @@ public class ForecastFragment extends Fragment {
             String forecastJsonStr = null;
             String format = "jason";
             String units = "metric";
+            String lang = "de";
             int numDays = 7;
 
             try {
@@ -137,6 +163,7 @@ public class ForecastFragment extends Fragment {
                 /// rolf URL deprecated!???
                 final String FORECAST_BASE_URL = "http://api.openweathermap.org/data/2.5/forecast/daily?";
                 final String QUERY_PARAM = "q";
+                final String LANG_PARAM = "lang";
                 final String FORMAT_PARAM = "mode";
                 final String UNIT_PARAM = "units";
                 final String DAYS_PARAM = "cnt";
@@ -144,6 +171,7 @@ public class ForecastFragment extends Fragment {
                 Uri builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
                         .appendQueryParameter(QUERY_PARAM, params[0])
                                 // set in zero position of params array, where there is the location
+                        .appendQueryParameter(LANG_PARAM, lang)
                         .appendQueryParameter(FORMAT_PARAM, format)
                         .appendQueryParameter(UNIT_PARAM, units)
                         .appendQueryParameter(DAYS_PARAM, Integer.toString(numDays))
