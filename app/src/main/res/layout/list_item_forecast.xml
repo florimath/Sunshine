@@ -6,6 +6,8 @@
     android:paddingBottom="14dp"
     android:paddingTop="14dp"
     android:gravity="center_vertical"
-    android:id="@+id/list_item_forecast_textview">
+    android:id="@+id/list_item_forecast_textview"
+    android:editable="false"
+    android:textIsSelectable="false">
 
 </TextView>

@@ -1,11 +1,15 @@
 package com.example.rolf.sunshine;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.text.Html;
+import android.text.Spanned;
 import android.text.format.Time;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,6 +25,8 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.LabelFormatter;
+import com.jjoe64.graphview.Viewport;
 import com.jjoe64.graphview.helper.StaticLabelsFormatter;
 import com.jjoe64.graphview.series.BarGraphSeries;
 import com.jjoe64.graphview.series.DataPoint;
@@ -72,18 +78,21 @@ public class ForecastFragment extends Fragment {
         }
 
         if (id == R.id.action_refresh) {
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+            String location = prefs.getString(
+                    getString(R.string.pref_location_key),
+                    getString(R.string.pref_location_default));
             FetchWeatherTask actualWeatherTask = new FetchWeatherTask();
-            actualWeatherTask.execute("Berlin,de");
+            actualWeatherTask.execute(location);
             return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 
-    String[] forecastArray = {"   Press menu Refresh for retrieving weather data",
+    String[] forecastArray = {"   <b>Press menu Refresh for retrieving weather data</b>",
             " ", " ", " ", " ", " ", " "};
     double[] tempArray = {-3,-2,3,4,3,2,1};  // to be filled with actual temperatures later - for Graph
-    double[] precipArray = {1,0,0,2,5,3,3};
+    double[] precipArray = {1,0,0,2,8,9.5,3};
     String[] dayNameArray = {"a","b","c","4","5","6","7"};
     DataPoint[] tempPoint;
     DataPoint[] precipPoint;
@@ -105,7 +114,7 @@ public class ForecastFragment extends Fragment {
 
         List<String> weekForecast = new ArrayList<String>( Arrays.asList(forecastArray) );
 
-        myForecastAdapter = new ArrayAdapter<String> (
+        myForecastAdapter = new ArrayAdapter<String>(
                 getActivity(),
                 R.layout.list_item_forecast,
                 R.id.list_item_forecast_textview,
@@ -118,7 +127,7 @@ public class ForecastFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 //Toast.makeText(getActivity().getApplicationContext(),"list id = " + id, Toast.LENGTH_SHORT).show();
-                String forecast =myForecastAdapter.getItem(position);
+                String forecast = myForecastAdapter.getItem(position);
                 Intent intent = new Intent(getActivity().getApplicationContext(), DetailActivity.class)
                         .putExtra(Intent.EXTRA_TEXT, forecast);
                 startActivity(intent);
@@ -141,25 +150,42 @@ public class ForecastFragment extends Fragment {
             tempPoint[i] = new DataPoint( i, tempArray[i] );
             precipPoint[i] = new DataPoint( i, precipArray[i] );
         }
-        series2 = new BarGraphSeries<>(precipPoint);
         series = new LineGraphSeries<>(tempPoint);
+        series2 = new BarGraphSeries<>(precipPoint);
         //series.setBackgroundColor(Color.GREEN);
         //series.setDrawBackground(true);
         series.setColor(Color.rgb(250, 200, 0));
         series2.setColor(Color.argb(60, 0, 0, 255) );
         series.setThickness(8);
 
-        diagr.addSeries(series2);
+        //diagr.addSeries(series2);
         diagr.addSeries(series);
         //diagr.setBackgroundColor(Color.GREEN);
-        diagr.getViewport().setMinY(series.getLowestValueY()-2);
-        diagr.getViewport().setMaxY(series.getHighestValueY()+2);
-        diagr.getViewport().setMaxX(6d);
+        diagr.getViewport().setMinY(-5);
+        diagr.getViewport().setMaxY(5);
+        diagr.getViewport().setMaxX(6);
         diagr.getViewport().setXAxisBoundsManual(true);
         diagr.getViewport().setYAxisBoundsManual(true);
         //diagr.getGridLabelRenderer().set bla bla
         StaticLabelsFormatter labels = new StaticLabelsFormatter(diagr);
         labels.setHorizontalLabels(dayNameArray);
+        labels.setDynamicLabelFormatter(new LabelFormatter() {
+            @Override
+            public String formatLabel(double v, boolean b) {
+                return null;
+            }
+
+            @Override
+            public void setViewport(Viewport viewport) {
+
+            }
+        });
+
+        diagr.getSecondScale().addSeries(series2);
+        diagr.getSecondScale().setMinY(0);
+        diagr.getSecondScale().setMaxY(10);
+        diagr.getGridLabelRenderer().setVerticalLabelsSecondScaleColor(Color.BLUE);
+        diagr.getGridLabelRenderer().setVerticalLabelsColor(Color.rgb(250, 200, 0));
 
         return rootView;
     }
@@ -177,24 +203,23 @@ public class ForecastFragment extends Fragment {
             HttpURLConnection urlConnection = null;
             BufferedReader reader = null;
 
+            final String FORECAST_BASE_URL = "http://api.openweathermap.org/data/2.5/forecast/daily?";
+            final String QUERY_PARAM = "q";
+            final String LANG_PARAM = "lang";
+            final String FORMAT_PARAM = "mode";
+            final String UNIT_PARAM = "units";
+            final String DAYS_PARAM = "cnt";
             // Will contain the raw JSON response as a string.
             String forecastJsonStr = null;
+            String lang = "de";
             String format = "jason";
             String units = "metric";
-            String lang = "de";
             int numDays = 7;
 
             try {
                 // Construct the URL for the OpenWeatherMap query
                 // Possible parameters are avaiable at OWM's forecast API page, at
                 // http://openweathermap.org/API#forecast
-                /// rolf URL deprecated!???
-                final String FORECAST_BASE_URL = "http://api.openweathermap.org/data/2.5/forecast/daily?";
-                final String QUERY_PARAM = "q";
-                final String LANG_PARAM = "lang";
-                final String FORMAT_PARAM = "mode";
-                final String UNIT_PARAM = "units";
-                final String DAYS_PARAM = "cnt";
 
                 Uri builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
                         .appendQueryParameter(QUERY_PARAM, params[0])
@@ -272,7 +297,7 @@ public class ForecastFragment extends Fragment {
                     long dateTime = dayTime.setJulianDay(julianStartDay+i);
                     SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE MMM dd");
                     String day = shortenedDateFormat.format(dateTime);
-                    if ( i==0 ) day = "Heute,  " + day;
+                    if ( i==0 ) day = "<b>Heute</b>,  " + day;
                     if ( i==1 ) day = "Morgen, " + day;
 
                     //dayWeather.temp = tempDay;
@@ -280,13 +305,9 @@ public class ForecastFragment extends Fragment {
                     Log.v(LOG_TAG,"--> day " + i + ":  "  + description + ", " + tempDayRounded + "°C, ");
 
                     //dayWeatherList.add(dayWeather);
-                    forecastArray[i] = " " + day + ":  " + description + ", " + tempDayRounded + "°C";
-
-                }
-                for (int i = 0; i < numDays; i++) {
+                    forecastArray[i] = " " + day + ": " + description + ", " + tempDayRounded + "°C";
                     tempPoint[i] = new DataPoint( i, tempArray[i] );
                 }
-
                 return forecastArray;
 
             } catch (IOException e) {
@@ -322,10 +343,12 @@ public class ForecastFragment extends Fragment {
                 for (String day : result) {
                     // this is, what ultimately triggers the ListView zu update
                     myForecastAdapter.add(day);
+                    //myForecastAdapter.add(Html.fromHtml(day));
+
                 }
                 series.resetData(tempPoint);
                 diagr.getViewport().setMinY(Math.floor(series.getLowestValueY() - 2));
-                diagr.getViewport().setMaxY(Math.ceil(series.getHighestValueY()+2));
+                diagr.getViewport().setMaxY(Math.ceil(series.getHighestValueY() + 2));
             }
             super.onPostExecute(result);
         }
