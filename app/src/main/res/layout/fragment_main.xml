@@ -7,10 +7,20 @@
     android:layout_marginTop="2dp"
     android:orientation="vertical">
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="location"
+        android:id="@+id/textview_forecast"
+        android:background="#ffffb400"
+        android:textSize="30dp"
+        android:gravity="center_horizontal" />
+
     <ListView
         android:layout_width="match_parent"
         android:layout_height="500dp"
         android:layout_weight="7"
+        android:textSize="30dp"
         android:id="@+id/listview_forecast"
         android:layout_gravity="center" />
     <!--

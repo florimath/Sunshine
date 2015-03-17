@@ -18,10 +18,13 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.jjoe64.graphview.GraphView;
@@ -47,6 +50,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 public class ForecastFragment extends Fragment {
 
@@ -78,24 +82,37 @@ public class ForecastFragment extends Fragment {
         }
 
         if (id == R.id.action_refresh) {
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-            String location = prefs.getString(
-                    getString(R.string.pref_location_key),
-                    getString(R.string.pref_location_default));
-            FetchWeatherTask actualWeatherTask = new FetchWeatherTask();
-            actualWeatherTask.execute(location);
+            updateWeather();
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
-    String[] forecastArray = {"   <b>Press menu Refresh for retrieving weather data</b>",
+    private void updateWeather() {
+        FetchWeatherTask actualWeatherTask = new FetchWeatherTask();
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        String location = prefs.getString(
+                    getString(R.string.pref_location_key),
+                    getString(R.string.pref_location_default));
+        actualWeatherTask.execute(location);
+        String[] cityCountry = location.split(",");
+        heading.setText(cityCountry[0]);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        updateWeather();
+    }
+
+    String[] forecastArray = {"   <b>Wait, weather data are retrieved ...a</b>",
             " ", " ", " ", " ", " ", " "};
-    double[] tempArray = {-3,-2,3,4,3,2,1};  // to be filled with actual temperatures later - for Graph
+    double[] tempArray = {0,0,0,0,0,0,0};  // to be filled with actual temperatures later - for Graph
     double[] precipArray = {1,0,0,2,8,9.5,3};
     String[] dayNameArray = {"a","b","c","4","5","6","7"};
     DataPoint[] tempPoint;
     DataPoint[] precipPoint;
+    private final String LOG_TAG = ForecastFragment.class.getSimpleName();
 
 
     //ArrayList<DayWeather> dayWeatherList = new ArrayList<DayWeather>();
@@ -105,6 +122,7 @@ public class ForecastFragment extends Fragment {
     GraphView diagr;
     LineGraphSeries<DataPoint> series;
     BarGraphSeries<DataPoint> series2;
+    TextView heading;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -134,6 +152,8 @@ public class ForecastFragment extends Fragment {
             }
         });
 
+        heading = (TextView) rootView.findViewById((R.id.textview_forecast));
+
 /* Old Graph with achartenginge
         BarGraph barGraph = new BarGraph(tempArray);
         GraphicalView graphicalView = barGraph.getView(getActivity().getApplicationContext());
@@ -158,8 +178,6 @@ public class ForecastFragment extends Fragment {
         series2.setColor(Color.argb(60, 0, 0, 255) );
         series.setThickness(8);
 
-        //diagr.addSeries(series2);
-        diagr.addSeries(series);
         //diagr.setBackgroundColor(Color.GREEN);
         diagr.getViewport().setMinY(-5);
         diagr.getViewport().setMaxY(5);
@@ -174,20 +192,37 @@ public class ForecastFragment extends Fragment {
             public String formatLabel(double v, boolean b) {
                 return null;
             }
-
             @Override
             public void setViewport(Viewport viewport) {
-
             }
         });
 
         diagr.getSecondScale().addSeries(series2);
+        //diagr.addSeries(series2);
+        diagr.addSeries(series);
         diagr.getSecondScale().setMinY(0);
         diagr.getSecondScale().setMaxY(10);
         diagr.getGridLabelRenderer().setVerticalLabelsSecondScaleColor(Color.BLUE);
         diagr.getGridLabelRenderer().setVerticalLabelsColor(Color.rgb(250, 200, 0));
 
         return rootView;
+    }
+
+    private String formatTemperature(double t) {
+        String tStr = "";
+        SharedPreferences sharedPrefs = PreferenceManager
+                .getDefaultSharedPreferences(getActivity().getApplicationContext());
+
+        String unitType = sharedPrefs.getString(
+                getString(R.string.pref_units_key),
+                getString(R.string.pref_units_metric));
+        if(unitType.equals(getString(R.string.pref_units_imperial))) {
+            t = (t*1.8) + 32;
+            tStr = Math.round(10*t)/10 + "°F";
+        } else if (unitType.equals(getString(R.string.pref_units_metric))) {
+            tStr = Math.round(10*t)/10 + "°C";
+        } else Log.d(LOG_TAG, "Unit type not found: " + unitType);
+        return tStr;
     }
 
 
@@ -211,7 +246,7 @@ public class ForecastFragment extends Fragment {
             final String DAYS_PARAM = "cnt";
             // Will contain the raw JSON response as a string.
             String forecastJsonStr = null;
-            String lang = "de";
+            String lang = "ru";
             String format = "jason";
             String units = "metric";
             int numDays = 7;
@@ -287,7 +322,7 @@ public class ForecastFragment extends Fragment {
                     String tempDay = jsonTemperatureObject.getString("day");
                     double tempDayDouble = Double.parseDouble(tempDay);
                     tempArray[i] = Math.round(tempDayDouble*10)/10;
-                    long tempDayRounded = Math.round(tempDayDouble);
+                    //long tempDayRounded = Math.round(tempDayDouble);
 
                     // the weather description is hidden in another array with keyword "weather"
                     // this array has only one JSONObject-field
@@ -295,17 +330,17 @@ public class ForecastFragment extends Fragment {
                     String description = jsonDescriptionArray.getJSONObject(0).getString("description");
 
                     long dateTime = dayTime.setJulianDay(julianStartDay+i);
-                    SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE MMM dd");
+                    SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE dd. MMM", Locale.GERMAN);
                     String day = shortenedDateFormat.format(dateTime);
-                    if ( i==0 ) day = "<b>Heute</b>,  " + day;
-                    if ( i==1 ) day = "Morgen, " + day;
+                    if ( i==0 ) day = "<b>Heute</b>,  ";
+                    if ( i==1 ) day = "Morgen, ";
 
                     //dayWeather.temp = tempDay;
                     //dayWeather.description = description;
-                    Log.v(LOG_TAG,"--> day " + i + ":  "  + description + ", " + tempDayRounded + "°C, ");
-
+                    Log.v(LOG_TAG,"--> day " + i + ":  "  + description + ", " + tempDayDouble + "°C");
+                    Log.v(LOG_TAG,"--> day " + i + ":  "  + description + ", " + formatTemperature(tempDayDouble));
                     //dayWeatherList.add(dayWeather);
-                    forecastArray[i] = " " + day + ": " + description + ", " + tempDayRounded + "°C";
+                    forecastArray[i] = " " + day + ":  " + description + ", " + formatTemperature(tempDayDouble);
                     tempPoint[i] = new DataPoint( i, tempArray[i] );
                 }
                 return forecastArray;

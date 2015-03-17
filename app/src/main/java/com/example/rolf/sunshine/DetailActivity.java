@@ -11,6 +11,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.os.Build;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.TextView;
 
 
@@ -25,6 +27,12 @@ public class DetailActivity extends ActionBarActivity {
                     .add(R.id.container, new PlaceholderFragment())
                     .commit();
         }
+
+        Animation animateDetail = AnimationUtils
+                .loadAnimation(this, R.anim.anim_detailview);
+        animateDetail.setDuration(2000);
+        animateDetail.setFillAfter(true);
+        findViewById(R.id.container).startAnimation(animateDetail);
     }
 
     @Override
@@ -62,6 +70,13 @@ public class DetailActivity extends ActionBarActivity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
+
+            Animation animateDetail = AnimationUtils
+                    .loadAnimation(getActivity().getApplicationContext(), R.anim.anim_detailview);
+            animateDetail.setDuration(2000);
+            animateDetail.setFillAfter(true);
+            rootView.findViewById(R.id.detail_root).startAnimation(animateDetail);
+
             Intent intent = getActivity().getIntent();
             if (intent != null && intent.hasExtra(Intent.EXTRA_TEXT)) {
                 String forecast = intent.getStringExtra(Intent.EXTRA_TEXT);
