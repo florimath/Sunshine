@@ -1,5 +1,6 @@
 package com.example.rolf.sunshine;
 
+import android.app.ActivityOptions;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -8,8 +9,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
-import android.text.Html;
-import android.text.Spanned;
 import android.text.format.Time;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,14 +17,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.LabelFormatter;
@@ -35,7 +30,6 @@ import com.jjoe64.graphview.series.BarGraphSeries;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
-import org.achartengine.GraphicalView;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -119,7 +113,6 @@ public class ForecastFragment extends Fragment {
     //ArrayList<DayWeather> dayWeatherList = new ArrayList<DayWeather>();
 
     ArrayAdapter<String> myForecastAdapter;
-
     GraphView diagr;
     LineGraphSeries<DataPoint> series;
     BarGraphSeries<DataPoint> series2;
@@ -147,13 +140,21 @@ public class ForecastFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 //Toast.makeText(getActivity().getApplicationContext(),"list id = " + id, Toast.LENGTH_SHORT).show();
                 String forecast = myForecastAdapter.getItem(position);
-                Intent intent = new Intent(getActivity().getApplicationContext(), DetailActivity.class)
+                Intent launchDetailActivity = new Intent(getActivity().getApplicationContext(), DetailActivity.class)
                         .putExtra(Intent.EXTRA_TEXT, forecast);
-                startActivity(intent);
+                Bundle transitionBundle =
+                        ActivityOptions.makeCustomAnimation(
+                                getActivity().getApplicationContext(),
+                                R.anim.slide_in_left, R.anim.slide_out_left).toBundle();
+                //startActivity(launchDetailActivity, transitionBundle); // geht nicht
+                startActivity(launchDetailActivity);
+                //overridePendingTransition(R.anim.slide_in_left,R.anim.slide_out_left);
+                // geht auch nicht, weil diese MEthode in Fragment offenbar nicht zur Verfügung steht
+                // den Befehl in MainActivity onCreate gesetzt - funktioniert aber auch nicht
             }
         });
 
-        heading = (TextView) rootView.findViewById((R.id.textview_forecast));
+        heading = (TextView) rootView.findViewById((R.id.textview_forecast_heading));
 
 /* Old Graph with achartenginge
         BarGraph barGraph = new BarGraph(tempArray);

@@ -11,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="location"
-        android:id="@+id/textview_forecast"
+        android:id="@+id/textview_forecast_heading"
         android:background="#ffffb400"
         android:textSize="30dp"
         android:gravity="center_horizontal" />

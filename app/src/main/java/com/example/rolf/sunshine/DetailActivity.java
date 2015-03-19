@@ -43,6 +43,12 @@ public class DetailActivity extends ActionBarActivity {
     }
 
     @Override
+    public void finish() {
+        super.finish();
+        //overridePendingTransition(R.anim.slide_in_right,R.anim.slide_out_right);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long

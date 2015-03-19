@@ -23,6 +23,7 @@ public class MainActivity extends ActionBarActivity {
                     .add(R.id.container, new ForecastFragment())
                     .commit();
         }
+        overridePendingTransition(R.anim.slide_in_left,R.anim.slide_out_left);
     }
 
     @Override
