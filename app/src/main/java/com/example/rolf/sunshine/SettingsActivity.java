@@ -62,10 +62,7 @@ public class SettingsActivity extends PreferenceActivity
             // For other preferences, set the summary to the value's simple string representation.
             preference.setSummary(stringValue);
         }
-        Toast.makeText(getApplicationContext(), stringValue, Toast.LENGTH_SHORT ).show();
-        //ForecastFragment fcF = new ForecastFragment();
-        //ForecastFragment.FetchWeatherTask actualWeatherTask = fcF.new FetchWeatherTask();
-        //actualWeatherTask.execute(stringValue);
+        //Toast.makeText(getApplicationContext(), stringValue, Toast.LENGTH_SHORT ).show();
         return true;
     }
 

@@ -49,6 +49,7 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -105,7 +106,7 @@ public class ForecastFragment extends Fragment {
         updateWeather();
     }
 
-    String[] forecastArray = {"   <b>Wait, weather data are retrieved ...a</b>",
+    String[] forecastArray = {"  Please wait, weather data beeing retrieved ... ",
             " ", " ", " ", " ", " ", " "};
     double[] tempArray = {0,0,0,0,0,0,0};  // to be filled with actual temperatures later - for Graph
     double[] precipArray = {1,0,0,2,8,9.5,3};
@@ -205,6 +206,14 @@ public class ForecastFragment extends Fragment {
         diagr.getGridLabelRenderer().setVerticalLabelsSecondScaleColor(Color.BLUE);
         diagr.getGridLabelRenderer().setVerticalLabelsColor(Color.rgb(250, 200, 0));
 
+        Locale locale = Locale.GERMAN;
+        Date today = new Date();
+        System.out.println("Date format in "
+                + locale.getDisplayName()
+                + ": "
+                + SimpleDateFormat.getDateInstance(SimpleDateFormat.SHORT, locale)
+                    .format(today).toUpperCase());
+
         return rootView;
     }
 
@@ -218,16 +227,15 @@ public class ForecastFragment extends Fragment {
                 getString(R.string.pref_units_metric));
         if(unitType.equals(getString(R.string.pref_units_imperial))) {
             t = (t*1.8) + 32;
-            tStr = Math.round(10*t)/10 + "°F";
+            tStr = Math.round(10*t)/10. + "°F";
         } else if (unitType.equals(getString(R.string.pref_units_metric))) {
-            tStr = Math.round(10*t)/10 + "°C";
+            tStr = Math.round(10*t)/10. + "°C";
         } else Log.d(LOG_TAG, "Unit type not found: " + unitType);
         return tStr;
     }
 
 
     public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
-
         private final String LOG_TAG = FetchWeatherTask.class.getSimpleName();
 
         @Override
@@ -321,7 +329,7 @@ public class ForecastFragment extends Fragment {
                     JSONObject jsonTemperatureObject = jsonDayWeather.getJSONObject("temp");
                     String tempDay = jsonTemperatureObject.getString("day");
                     double tempDayDouble = Double.parseDouble(tempDay);
-                    tempArray[i] = Math.round(tempDayDouble*10)/10;
+                    tempArray[i] = Math.round(tempDayDouble*10)/10.;
                     //long tempDayRounded = Math.round(tempDayDouble);
 
                     // the weather description is hidden in another array with keyword "weather"
@@ -337,7 +345,6 @@ public class ForecastFragment extends Fragment {
 
                     //dayWeather.temp = tempDay;
                     //dayWeather.description = description;
-                    Log.v(LOG_TAG,"--> day " + i + ":  "  + description + ", " + tempDayDouble + "°C");
                     Log.v(LOG_TAG,"--> day " + i + ":  "  + description + ", " + formatTemperature(tempDayDouble));
                     //dayWeatherList.add(dayWeather);
                     forecastArray[i] = " " + day + ":  " + description + ", " + formatTemperature(tempDayDouble);
