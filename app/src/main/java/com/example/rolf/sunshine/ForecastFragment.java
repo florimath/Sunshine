@@ -255,7 +255,7 @@ public class ForecastFragment extends Fragment {
             final String DAYS_PARAM = "cnt";
             // Will contain the raw JSON response as a string.
             String forecastJsonStr = null;
-            String lang = "ru";
+            String lang = "sp";
             String format = "jason";
             String units = "metric";
             int numDays = 7;
