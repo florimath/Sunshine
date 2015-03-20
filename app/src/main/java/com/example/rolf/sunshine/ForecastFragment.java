@@ -48,7 +48,7 @@ import java.util.List;
 import java.util.Locale;
 
 public class ForecastFragment extends Fragment {
-    //github push from desktop test
+    private final String LOG_TAG = ForecastFragment.class.getSimpleName();
 
     public ForecastFragment() {
     }
@@ -109,7 +109,7 @@ public class ForecastFragment extends Fragment {
     String[] dayNameArray = {"a","b","c","4","5","6","7"};
     DataPoint[] tempPoint;
     DataPoint[] precipPoint;
-    private final String LOG_TAG = ForecastFragment.class.getSimpleName();
+
 
     //ArrayList<DayWeather> dayWeatherList = new ArrayList<DayWeather>();
 
@@ -145,15 +145,16 @@ public class ForecastFragment extends Fragment {
 
                 Intent launchDetailActivity = new Intent(getActivity().getApplicationContext(), DetailActivity.class)
                         .putExtra(Intent.EXTRA_TEXT, forecast);
-                Bundle transitionBundle =
-                        ActivityOptions.makeCustomAnimation(
-                                getActivity().getApplicationContext(),
-                                R.anim.slide_in_left, R.anim.slide_out_left)
-                                .toBundle();
+                //Bundle transitionBundle =
+                //        ActivityOptions.makeCustomAnimation(
+                //                getActivity().getApplicationContext(),
+                //                R.anim.slide_in_left, R.anim.slide_out_left)
+                //                .toBundle();
                 //startActivity(launchDetailActivity, transitionBundle); // geht nicht
                 startActivity(launchDetailActivity);
                 //overridePendingTransition(R.anim.slide_in_left,R.anim.slide_out_left);
                 // geht auch nicht, weil diese Methode in Fragment offenbar nicht zur Verfügung steht
+                // dieser Befehl muss auch in die empfangende Activity (Study Jam, Mirco)
             }
         });
 
@@ -208,12 +209,13 @@ public class ForecastFragment extends Fragment {
         diagr.getGridLabelRenderer().setVerticalLabelsSecondScaleColor(Color.BLUE);
         diagr.getGridLabelRenderer().setVerticalLabelsColor(Color.rgb(250, 200, 0));
 
-        Locale locale = Locale.GERMAN;
+        Locale locale = Locale.JAPANESE;
+        //Locale locale = new Locale("ru","RU");
         Date today = new Date();
         System.out.println("Date format in "
                 + locale.getDisplayName()
                 + ": "
-                + SimpleDateFormat.getDateInstance(SimpleDateFormat.SHORT, locale)
+                + SimpleDateFormat.getDateInstance(SimpleDateFormat.LONG, locale)
                     .format(today).toUpperCase());
 
         return rootView;

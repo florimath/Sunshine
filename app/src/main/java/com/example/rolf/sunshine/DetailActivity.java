@@ -34,34 +34,26 @@ public class DetailActivity extends ActionBarActivity {
                     .commit();
         }
 
+        // text comming softly with alpha in delail-View
         Animation animateDetail = AnimationUtils
                 .loadAnimation(this, R.anim.anim_detailview);
-        animateDetail.setDuration(500);
+        //animateDetail.setDuration(3000);
         animateDetail.setFillAfter(true);
         findViewById(R.id.container).startAnimation(animateDetail);
 
-        overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_left);
+        overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_left);  // enter, exit
+        // enter: Detail comes from 100% to 0,  exit: ForecastFragm goes from 0 to -50%
+
     }
 
     @Override
     public void finish() {
         super.finish();
-        //overridePendingTransition(R.anim.slide_in_right,R.anim.slide_out_right);
+        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_right);
     }
 
-    /*
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_detail, menu);
-        MenuItem shareItem = menu.findItem(R.id.item_share);
-        //ShareActionProvider myShareActionProvider = (ShareActionProvider) shareItem.getActionProvider();
-        ShareActionProvider myShareActionProvider =
-                (ShareActionProvider) MenuItemCompat.getActionProvider(shareItem);
-        return true;
-    }
-    */
 
+    //  Detail - FRAGMENT
     public static class DetailFragment extends Fragment {
         private static final String LOG_TAG = DetailFragment.class.getSimpleName();
         private static final String FORECAST_SHARE_HASHTAG = " #SunshineApp";
@@ -118,12 +110,6 @@ public class DetailActivity extends ActionBarActivity {
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
 
-            // create alpha animation for entry
-            Animation animateDetail = AnimationUtils
-                    .loadAnimation(getActivity().getApplicationContext(), R.anim.anim_detailview);
-            animateDetail.setDuration(2000);
-            animateDetail.setFillAfter(true);
-            rootView.findViewById(R.id.detail_root).startAnimation(animateDetail);
             heading = (TextView) rootView.findViewById((R.id.textview_detail_heading));
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
             String location = prefs.getString(
@@ -153,7 +139,8 @@ public class DetailActivity extends ActionBarActivity {
             shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
             // prevents the App the system launches to beeing put an the activity stack
             shareIntent.setType("text/plain"); // tell Android that we gona going to share plain text
-            shareIntent.putExtra(Intent.EXTRA_TEXT, location + ", " + myForecastString + FORECAST_SHARE_HASHTAG);
+            shareIntent.putExtra(
+                    Intent.EXTRA_TEXT, location + ", " + myForecastString + FORECAST_SHARE_HASHTAG);
             return shareIntent;
         }
     }

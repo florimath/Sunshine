@@ -23,8 +23,38 @@ public class MainActivity extends ActionBarActivity {
                     .add(R.id.container, new ForecastFragment())
                     .commit();
         }
+        Log.v(LOG_TAG, "--> onCreate");
+    }
 
-            }
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.v(LOG_TAG, "--> onStart");
+        // There is no such thing as this.getSimpleName()   !?!?!
+    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.v(LOG_TAG, "--> onResume");
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.v(LOG_TAG, "--> onPause");
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.v(LOG_TAG, "--> onStop");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.v(LOG_TAG, "--> onDestroy");
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
