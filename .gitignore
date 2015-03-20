@@ -1,4 +1,7 @@
 .gradle
+Sunshine.iml
+app/app.iml
+libs/libs.iml
 /local.properties
 /.idea/workspace.xml
 /.idea/libraries
