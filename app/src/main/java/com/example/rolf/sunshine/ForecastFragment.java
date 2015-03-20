@@ -83,15 +83,16 @@ public class ForecastFragment extends Fragment {
         return super.onOptionsItemSelected(item);
     }
 
+    TextView heading; // Assignment in onCreateView
     private void updateWeather() {
-        FetchWeatherTask actualWeatherTask = new FetchWeatherTask();
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
         String location = prefs.getString(
                     getString(R.string.pref_location_key),
                     getString(R.string.pref_location_default));
-        actualWeatherTask.execute(location);
         String[] cityCountry = location.split(",");
         heading.setText(cityCountry[0]);
+        FetchWeatherTask actualWeatherTask = new FetchWeatherTask();
+        actualWeatherTask.execute(location);
     }
 
     @Override
@@ -109,14 +110,12 @@ public class ForecastFragment extends Fragment {
     DataPoint[] precipPoint;
     private final String LOG_TAG = ForecastFragment.class.getSimpleName();
 
-
     //ArrayList<DayWeather> dayWeatherList = new ArrayList<DayWeather>();
 
     ArrayAdapter<String> myForecastAdapter;
     GraphView diagr;
     LineGraphSeries<DataPoint> series;
     BarGraphSeries<DataPoint> series2;
-    TextView heading;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -134,27 +133,28 @@ public class ForecastFragment extends Fragment {
 
         ListView listView = (ListView) rootView.findViewById(R.id.listview_forecast);
         listView.setAdapter(myForecastAdapter);
+        heading = (TextView) rootView.findViewById((R.id.textview_forecast_heading));
+
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 //Toast.makeText(getActivity().getApplicationContext(),"list id = " + id, Toast.LENGTH_SHORT).show();
                 String forecast = myForecastAdapter.getItem(position);
+
                 Intent launchDetailActivity = new Intent(getActivity().getApplicationContext(), DetailActivity.class)
                         .putExtra(Intent.EXTRA_TEXT, forecast);
                 Bundle transitionBundle =
                         ActivityOptions.makeCustomAnimation(
                                 getActivity().getApplicationContext(),
-                                R.anim.slide_in_left, R.anim.slide_out_left).toBundle();
+                                R.anim.slide_in_left, R.anim.slide_out_left)
+                                .toBundle();
                 //startActivity(launchDetailActivity, transitionBundle); // geht nicht
                 startActivity(launchDetailActivity);
                 //overridePendingTransition(R.anim.slide_in_left,R.anim.slide_out_left);
-                // geht auch nicht, weil diese MEthode in Fragment offenbar nicht zur Verfügung steht
-                // den Befehl in MainActivity onCreate gesetzt - funktioniert aber auch nicht
+                // geht auch nicht, weil diese Methode in Fragment offenbar nicht zur Verfügung steht
             }
         });
-
-        heading = (TextView) rootView.findViewById((R.id.textview_forecast_heading));
 
 /* Old Graph with achartenginge
         BarGraph barGraph = new BarGraph(tempArray);
@@ -255,7 +255,7 @@ public class ForecastFragment extends Fragment {
             final String DAYS_PARAM = "cnt";
             // Will contain the raw JSON response as a string.
             String forecastJsonStr = null;
-            String lang = "sp";
+            String lang = "ru";
             String format = "jason";
             String units = "metric";
             int numDays = 7;

@@ -2,8 +2,8 @@
 <resources>
 
 <array name="pref_units_values">
-    <item>metric</item>
-    <item>imperial</item>
+    <item translatable="false">metric</item>
+    <item translatable="false">imperial</item>
 </array>
 
 <array name="pref_units_options">

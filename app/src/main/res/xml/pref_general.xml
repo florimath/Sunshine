@@ -10,10 +10,12 @@
        android:inputType="text"
        android:singleLine="true"
        android:selectAllOnFocus="true"/>
+
     <ListPreference
         android:title="units"
         android:key="units"
         android:defaultValue="@string/pref_units_metric"
+        android:icon="@drawable/thermo"
         android:entryValues="@array/pref_units_values"
         android:entries="@array/pref_units_options"/>
 

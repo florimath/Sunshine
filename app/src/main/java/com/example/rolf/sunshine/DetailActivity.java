@@ -27,6 +27,7 @@ public class DetailActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail2);
+
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.container, new DetailFragment())
@@ -35,9 +36,11 @@ public class DetailActivity extends ActionBarActivity {
 
         Animation animateDetail = AnimationUtils
                 .loadAnimation(this, R.anim.anim_detailview);
-        animateDetail.setDuration(2000);
+        animateDetail.setDuration(500);
         animateDetail.setFillAfter(true);
         findViewById(R.id.container).startAnimation(animateDetail);
+
+        overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_left);
     }
 
     @Override
@@ -46,6 +49,7 @@ public class DetailActivity extends ActionBarActivity {
         //overridePendingTransition(R.anim.slide_in_right,R.anim.slide_out_right);
     }
 
+    /*
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -56,30 +60,13 @@ public class DetailActivity extends ActionBarActivity {
                 (ShareActionProvider) MenuItemCompat.getActionProvider(shareItem);
         return true;
     }
+    */
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            startActivity( new Intent(this, SettingsActivity.class) );
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    /**
-     * A placeholder fragment containing a simple view.
-     */
     public static class DetailFragment extends Fragment {
         private static final String LOG_TAG = DetailFragment.class.getSimpleName();
         private static final String FORECAST_SHARE_HASHTAG = " #SunshineApp";
         private String myForecastString;
+        TextView heading; // Assignment in onCreateView
 
         public DetailFragment() {
             setHasOptionsMenu(true);
@@ -110,6 +97,23 @@ public class DetailActivity extends ActionBarActivity {
         }
 
         @Override
+        public boolean onOptionsItemSelected(MenuItem item) {
+            // Handle action bar item clicks here. The action bar will
+            // automatically handle clicks on the Home/Up button, so long
+            // as you specify a parent activity in AndroidManifest.xml.
+            int id = item.getItemId();
+
+            //noinspection SimplifiableIfStatement
+            if (id == R.id.action_settings) {
+                startActivity( new Intent(getActivity().getApplicationContext(), SettingsActivity.class) );
+                return true;
+            }
+
+            return super.onOptionsItemSelected(item);
+        }
+
+
+        @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
@@ -120,6 +124,14 @@ public class DetailActivity extends ActionBarActivity {
             animateDetail.setDuration(2000);
             animateDetail.setFillAfter(true);
             rootView.findViewById(R.id.detail_root).startAnimation(animateDetail);
+            heading = (TextView) rootView.findViewById((R.id.textview_detail_heading));
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+            String location = prefs.getString(
+                    getString(R.string.pref_location_key),
+                    getString(R.string.pref_location_default));
+            String[] cityCountry = location.split(",");
+            heading.setText(cityCountry[0]);
+
 
             Intent intent = getActivity().getIntent();
             if (intent != null && intent.hasExtra(Intent.EXTRA_TEXT)) {
@@ -141,7 +153,7 @@ public class DetailActivity extends ActionBarActivity {
             shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
             // prevents the App the system launches to beeing put an the activity stack
             shareIntent.setType("text/plain"); // tell Android that we gona going to share plain text
-            shareIntent.putExtra(Intent.EXTRA_TEXT, location + myForecastString + FORECAST_SHARE_HASHTAG);
+            shareIntent.putExtra(Intent.EXTRA_TEXT, location + ", " + myForecastString + FORECAST_SHARE_HASHTAG);
             return shareIntent;
         }
     }
