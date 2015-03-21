@@ -217,6 +217,11 @@ public class ForecastFragment extends Fragment {
                 + ": "
                 + SimpleDateFormat.getDateInstance(SimpleDateFormat.LONG, locale)
                     .format(today).toUpperCase());
+        Log.v(LOG_TAG," Date format in "
+                + locale.getDisplayName()
+                + ": "
+                + SimpleDateFormat.getDateInstance(SimpleDateFormat.LONG, locale)
+                .format(today).toUpperCase());
 
         return rootView;
     }
@@ -258,7 +263,7 @@ public class ForecastFragment extends Fragment {
             final String DAYS_PARAM = "cnt";
             // Will contain the raw JSON response as a string.
             String forecastJsonStr = null;
-            String lang = "ru";
+            String lang = "sp";
             String format = "jason";
             String units = "metric";
             int numDays = 7;

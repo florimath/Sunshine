@@ -15,7 +15,7 @@
         android:title="units"
         android:key="units"
         android:defaultValue="@string/pref_units_metric"
-        android:icon="@drawable/thermo"
+        android:icon="@drawable/thermo_celcius_fahrenheit_sun_66"
         android:entryValues="@array/pref_units_values"
         android:entries="@array/pref_units_options"/>
 
