@@ -113,14 +113,16 @@ public class TestDb extends AndroidTestCase {
     */
     public void testLocationTable() {
         // First step: Get reference to writable database
-        SQLiteDatabase db = new WeatherDbHelper(
-                this.mContext).getWritableDatabase();
+        SQLiteDatabase db = new WeatherDbHelper(this.mContext).getWritableDatabase();
 
         // Create ContentValues of what you want to insert
         // (you can use the createNorthPoleLocationValues if you wish)
         ContentValues testValues = TestUtilities.createNorthPoleLocationValues();
 
-        long locationRowId = insertLocation(db, testValues);
+        //long locationRowId = insertLocation(db, testValues);
+        long locationRowId = db.insert(WeatherContract.LocationEntry.TABLE_NAME, null, testValues);
+        // Verify we got a row back.
+        assertTrue("Error: Failure to get locationRowId", locationRowId != -1);
 
         // Query the database and receive a Cursor back
         Cursor dbCursor = db.query(
@@ -132,16 +134,15 @@ public class TestDb extends AndroidTestCase {
                 null, // columns to filter by row groups ???
                 null  // sort order
         );
-        Log.v("Index Exception?", String.valueOf(dbCursor));
+        //Log.v("Index Exception?", String.valueOf(dbCursor));
         // Move the cursor to a valid database row
-        //dbCursor.moveToPosition( (int)locationRowId );
+        assertTrue("Error: No Records returned from lacation query", dbCursor.moveToFirst() );
         // Validate data in resulting Cursor with the original ContentValues
         // (you can use the validateCurrentRecord function in TestUtilities to validate the
         // query if you like)
-        TestUtilities.validateCurrentRecord("Error: Location query validation failed",
-                dbCursor, testValues);
-
-        assertFalse("Error: Unexpectedly more than one row in db", dbCursor.moveToNext() );
+        TestUtilities.validateCurrentRecord("Error: Location query validation failed", dbCursor, testValues);
+        // Try to move Cursor to demonstate that there is only one record
+        assertFalse("Error: Unexpectedly more than one row in db", dbCursor.moveToNext());
         // Finally, close the cursor and database
         dbCursor.close();
         db.close();
@@ -163,22 +164,27 @@ public class TestDb extends AndroidTestCase {
         // tests. Why move it? We need the code to return the ID of the inserted location
         // and our testLocationTable can only return void because it's a test.
 
-        SQLiteDatabase db = new WeatherDbHelper(
+        SQLiteDatabase db2 = new WeatherDbHelper(
                 this.mContext).getWritableDatabase();
         // Create ContentValues of what you want to insert
         // (you can use the createNorthPoleLocationValues if you wish)
         ContentValues testValues = TestUtilities.createNorthPoleLocationValues();
-        long locationRowId = insertLocation(db, testValues);
+
+        long locationRowId = insertLocation(db2, testValues);
+
+        //long locationRowId = db2.insert(WeatherContract.LocationEntry.TABLE_NAME, null, testValues);
+        // Verify we got a row back.
+        assertTrue("Error: Failure to get locationRowId", locationRowId != -1);
 
         // Create ContentValues of what you want to insert
         // (you can use the createWeatherValues TestUtilities function if you wish)
         testValues = TestUtilities.createWeatherValues(locationRowId);
 
         // Insert ContentValues into database and get a location row ID back
-        long weatherRowId = db.insert(WeatherContract.WeatherEntry.TABLE_NAME, null, testValues);
+        long weatherRowId = db2.insert(WeatherContract.WeatherEntry.TABLE_NAME, null, testValues);
 
         // Query the database and receive a Cursor back
-        Cursor dbCursor = db.query(
+        Cursor dbCursor = db2.query(
                 WeatherContract.WeatherEntry.TABLE_NAME,
                 null, // all columns!
                 null, // Column for "where" clause
@@ -203,7 +209,7 @@ public class TestDb extends AndroidTestCase {
 
         // Finally, close the cursor and database
         dbCursor.close();
-        db.close();
+        db2.close();
     }
 
 

@@ -11,5 +11,47 @@
     <item>\"imperial\"</item>
 </array>
 
+<array name="pref_language_values">
+    <item translatable="false">en</item>
+    <item translatable="false">ru</item>
+    <item translatable="false">it</item>
+    <item translatable="false">es</item>
+    <item translatable="false">uk</item>
+    <item translatable="false">de</item>
+    <item translatable="false">pt</item>
+    <item translatable="false">ro</item>
+    <item translatable="false">pl</item>
+    <item translatable="false">fi</item>
+    <item translatable="false">nl</item>
+    <item translatable="false">fr</item>
+    <item translatable="false">bg</item>
+    <item translatable="false">sv</item>
+    <item translatable="false">zh_tw</item>
+    <item translatable="false">tr</item>
+    <item translatable="false">hr</item>
+    <item translatable="false">ca</item>
+</array>
+
+<array name="pref_language_options">
+    <item>English </item>
+    <item>Russian </item>
+    <item>Italian </item>
+    <item>Spanish </item>
+    <item>Ukrainian </item>
+    <item>German </item>
+    <item>Portuguese </item>
+    <item>Romanian </item>
+    <item>Polish </item>
+    <item>Finnish </item>
+    <item>Dutch </item>
+    <item>French </item>
+    <item>Bulgarian </item>
+    <item>Swedish </item>
+    <item>Chinese </item>
+    <item>Turkish </item>
+    <item>Croatian </item>
+    <item>Catalan </item>
+</array>
+
     
 </resources>
