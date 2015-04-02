@@ -8,6 +8,7 @@
         android:key="@string/pref_language_key"
         android:defaultValue="@string/pref_language_default"
         android:entryValues="@array/pref_language_values"
+        android:icon="@drawable/thermo_celsius_fahrenheit_sun_66"
         android:entries="@array/pref_language_options"/>
 
     <EditTextPreference
@@ -16,6 +17,7 @@
        android:defaultValue="@string/pref_location_default"
        android:inputType="text"
        android:singleLine="true"
+       android:icon="@drawable/thermo_celsius_fahrenheit_sun_66"
        android:selectAllOnFocus="true"/>
 
     <ListPreference

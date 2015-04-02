@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-<array name="pref_units_values">
+<string-array name="pref_units_values">
     <item translatable="false">metric</item>
     <item translatable="false">imperial</item>
-</array>
+</string-array>
 
-<array name="pref_units_options">
+<string-array name="pref_units_options">
     <item>metric</item>
-    <item>\"imperial\"</item>
-</array>
+    <item>imperial</item>
+</string-array>
 
-<array name="pref_language_values">
+<string-array name="pref_language_values">
+    <item translatable="false">de</item>
     <item translatable="false">en</item>
     <item translatable="false">ru</item>
     <item translatable="false">it</item>
     <item translatable="false">es</item>
     <item translatable="false">uk</item>
-    <item translatable="false">de</item>
     <item translatable="false">pt</item>
     <item translatable="false">ro</item>
     <item translatable="false">pl</item>
@@ -30,28 +30,27 @@
     <item translatable="false">tr</item>
     <item translatable="false">hr</item>
     <item translatable="false">ca</item>
-</array>
+</string-array>
 
-<array name="pref_language_options">
-    <item>English </item>
-    <item>Russian </item>
-    <item>Italian </item>
-    <item>Spanish </item>
-    <item>Ukrainian </item>
-    <item>German </item>
-    <item>Portuguese </item>
-    <item>Romanian </item>
-    <item>Polish </item>
-    <item>Finnish </item>
-    <item>Dutch </item>
-    <item>French </item>
-    <item>Bulgarian </item>
-    <item>Swedish </item>
-    <item>Chinese </item>
-    <item>Turkish </item>
-    <item>Croatian </item>
-    <item>Catalan </item>
-</array>
+<string-array name="pref_language_options">
+    <item>German</item>
+    <item>English</item>
+    <item>Russian</item>
+    <item>Italian</item>
+    <item>Spanish</item>
+    <item>Ukrainian</item>
+    <item>Portuguese</item>
+    <item>Romanian</item>
+    <item>Polish</item>
+    <item>Finnish</item>
+    <item>Dutch</item>
+    <item>French</item>
+    <item>Bulgarian</item>
+    <item>Swedish</item>
+    <item>Chinese</item>
+    <item>Turkish</item>
+    <item>Croatian</item>
+    <item>Catalan</item>
+</string-array>
 
-    
 </resources>

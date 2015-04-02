@@ -88,12 +88,15 @@ public class ForecastFragment extends Fragment {
     private void updateWeather() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
         String location = prefs.getString(
-                    getString(R.string.pref_location_key),
-                    getString(R.string.pref_location_default));
+                getString(R.string.pref_location_key),
+                getString(R.string.pref_location_default));
         String[] cityCountry = location.split(",");
         heading.setText(cityCountry[0]);
+        String language = prefs.getString(
+                getString(R.string.pref_language_key),
+                getString(R.string.pref_language_default));
         FetchWeatherTask actualWeatherTask = new FetchWeatherTask();
-        actualWeatherTask.execute(location);
+        actualWeatherTask.execute(location, language);
     }
 
     @Override
@@ -276,7 +279,7 @@ public class ForecastFragment extends Fragment {
                 Uri builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
                         .appendQueryParameter(QUERY_PARAM, params[0])
                                 // set in zero position of params array, where there is the location
-                        .appendQueryParameter(LANG_PARAM, lang)
+                        .appendQueryParameter(LANG_PARAM, params[1])  // language
                         .appendQueryParameter(FORMAT_PARAM, format)
                         .appendQueryParameter(UNIT_PARAM, units)
                         .appendQueryParameter(DAYS_PARAM, Integer.toString(numDays))
