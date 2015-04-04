@@ -32,7 +32,7 @@
     <item translatable="false">ca</item>
 </string-array>
 
-<string-array name="pref_language_options">
+<array name="pref_language_options">
     <item>English</item>
     <item>Russian</item>
     <item>German</item>
@@ -51,6 +51,6 @@
     <item>Turkish</item>
     <item>Croatian</item>
     <item>Catalan</item>
-</string-array>
+</array>
 
 </resources>
