@@ -15,9 +15,11 @@
  */
 
 package com.example.rolf.sunshine;
+        import android.content.ContentUris;
         import android.content.ContentValues;
         import android.content.Context;
         import android.content.SharedPreferences;
+        import android.database.Cursor;
         import android.net.Uri;
         import android.os.AsyncTask;
         import android.preference.PreferenceManager;
@@ -25,6 +27,7 @@ package com.example.rolf.sunshine;
         import android.util.Log;
         import android.widget.ArrayAdapter;
 
+        import com.example.rolf.sunshine.data.WeatherContract;
         import com.example.rolf.sunshine.data.WeatherContract.WeatherEntry;
 
         import org.json.JSONArray;
@@ -107,10 +110,38 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
      * @return the row ID of the added location.
      */
     long addLocation(String locationSetting, String cityName, double lat, double lon) {
-        // Students: First, check if the location with this city name exists in the db
-        // If it exists, return the current ID
-        // Otherwise, insert it using the content resolver and the base URI
-        return -1;
+        long locationId;
+
+        // First check if teh location with this city name exists in the db
+        Cursor locationCursor = mContext.getContentResolver().query(
+                WeatherContract.LocationEntry.CONTENT_URI,
+                new String[] {WeatherContract.LocationEntry._ID},
+                WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING + " = ?",
+                new String[]{locationSetting},
+                null);
+
+        if (locationCursor.moveToFirst()) {
+            int locationIdIndex = locationCursor.getColumnIndex(WeatherContract.LocationEntry._ID);
+            locationId = locationCursor.getLong(locationIdIndex);
+        } else {
+            // Inserting data, first create ContentValues object
+            ContentValues locationValues = new ContentValues();
+            // Add the data, along with the corresponing name of the data type
+            locationValues.put(WeatherContract.LocationEntry.COLUMN_CITY_NAME, cityName);
+            locationValues.put(WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING, locationSetting);
+            locationValues.put(WeatherContract.LocationEntry.COLUMN_COORD_LAT, lat);
+            locationValues.put(WeatherContract.LocationEntry.COLUMN_COORD_LONG, lon);
+
+            Uri insertedUri = mContext.getContentResolver().insert(
+                    WeatherContract.LocationEntry.CONTENT_URI,
+                    locationValues
+            );
+
+            locationId = ContentUris.parseId(insertedUri);
+        }
+
+        locationCursor.close();
+        return locationId;
     }
 
     /*
@@ -150,7 +181,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
         // into an Object hierarchy for us.
 
         // These are the names of the JSON objects that need to be extracted.
-
+        // from server Open Weather Map
         // Location information
         final String OWM_CITY = "city";
         final String OWM_CITY_NAME = "name";

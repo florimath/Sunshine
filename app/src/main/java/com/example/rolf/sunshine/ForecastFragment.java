@@ -148,16 +148,7 @@ public class ForecastFragment extends Fragment {
 
                 Intent launchDetailActivity = new Intent(getActivity().getApplicationContext(), DetailActivity.class)
                         .putExtra(Intent.EXTRA_TEXT, forecast);
-                //Bundle transitionBundle =
-                //        ActivityOptions.makeCustomAnimation(
-                //                getActivity().getApplicationContext(),
-                //                R.anim.slide_in_left, R.anim.slide_out_left)
-                //                .toBundle();
-                //startActivity(launchDetailActivity, transitionBundle); // geht nicht
                 startActivity(launchDetailActivity);
-                //overridePendingTransition(R.anim.slide_in_left,R.anim.slide_out_left);
-                // geht auch nicht, weil diese Methode in Fragment offenbar nicht zur Verfügung steht
-                // dieser Befehl muss auch in die empfangende Activity (Study Jam, Mirco)
             }
         });
 
@@ -215,11 +206,6 @@ public class ForecastFragment extends Fragment {
         Locale locale = Locale.JAPANESE;
         //Locale locale = new Locale("ru","RU");
         Date today = new Date();
-        System.out.println("Date format in "
-                + locale.getDisplayName()
-                + ": "
-                + SimpleDateFormat.getDateInstance(SimpleDateFormat.LONG, locale)
-                    .format(today).toUpperCase());
         Log.v(LOG_TAG," Date format in "
                 + locale.getDisplayName()
                 + ": "
