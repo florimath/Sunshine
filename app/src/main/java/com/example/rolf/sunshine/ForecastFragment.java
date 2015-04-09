@@ -95,8 +95,9 @@ public class ForecastFragment extends Fragment {
         String language = prefs.getString(
                 getString(R.string.pref_language_key),
                 getString(R.string.pref_language_default));
-        FetchWeatherTask actualWeatherTask = new FetchWeatherTask();
-        actualWeatherTask.execute(location, language);
+        //FetchWeatherTask actualWeatherTask = new FetchWeatherTask();
+        FetchWeatherTask weatherTask = new FetchWeatherTask(getActivity(), myForecastAdapter);
+        weatherTask.execute(location, language);
     }
 
     @Override
@@ -233,165 +234,165 @@ public class ForecastFragment extends Fragment {
     }
 
 
-    public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
-        private final String LOG_TAG = FetchWeatherTask.class.getSimpleName();
-
-        @Override
-        protected String[] doInBackground(String... params) {
-
-            // These two need to be declared outside the try/catch
-            // so that they can be closed in the finally block.
-            HttpURLConnection urlConnection = null;
-            BufferedReader reader = null;
-
-            final String FORECAST_BASE_URL = "http://api.openweathermap.org/data/2.5/forecast/daily?";
-            final String QUERY_PARAM = "q";
-            final String LANG_PARAM = "lang";
-            final String FORMAT_PARAM = "mode";
-            final String UNIT_PARAM = "units";
-            final String DAYS_PARAM = "cnt";
-            // Will contain the raw JSON response as a string.
-            String forecastJsonStr = null;
-            String lang = "ru";
-            String format = "jason";
-            String units = "metric";
-            int numDays = 7;
-
-            try {
-                // Construct the URL for the OpenWeatherMap query
-                // Possible parameters are avaiable at OWM's forecast API page, at
-                // http://openweathermap.org/API#forecast
-
-                Uri builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
-                        .appendQueryParameter(QUERY_PARAM, params[0])
-                                // set in zero position of params array, where there is the location
-                        .appendQueryParameter(LANG_PARAM, params[1])  // language
-                        .appendQueryParameter(FORMAT_PARAM, format)
-                        .appendQueryParameter(UNIT_PARAM, units)
-                        .appendQueryParameter(DAYS_PARAM, Integer.toString(numDays))
-                        .build();
-
-                URL url = new URL(builtUri.toString());
-                Log.v(LOG_TAG, "--> Built URI: " + url);
-
-                // Create the request to OpenWeatherMap, and open the connection
-                urlConnection = (HttpURLConnection) url.openConnection();
-                // rolf why a type cast here??
-                urlConnection.setRequestMethod("GET");
-                urlConnection.connect();
-
-                // Read the input stream into a String
-                InputStream inputStream = urlConnection.getInputStream();
-                StringBuffer buffer = new StringBuffer();
-
-                if (inputStream == null) {
-                    // Nothing to do.
-                    return null;
-                }
-
-                reader = new BufferedReader(new InputStreamReader(inputStream));
-
-                String line;
-                while ( (line = reader.readLine()) != null ) {
-                    // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
-                    // But it does make debugging a *lot* easier if you print out the completed
-                    // buffer for debugging.
-                    buffer.append(line + "\n");
-                }
-
-                if (buffer.length() == 0) {
-                    // Stream was empty.  No point in parsing.
-                    return null;
-                }
-
-                forecastJsonStr = buffer.toString();
-                Log.v(LOG_TAG, "--> forecastJsonStr: " + forecastJsonStr);
-
-                // Pass string data to JSON object
-                JSONObject forecastJsonObject = new JSONObject(forecastJsonStr);
-
-                // Build array; "list" is the keyword in forecastJsonStr where the array follows
-                JSONArray allDaysJsonArray = forecastJsonObject.getJSONArray("list");
-
-                Log.v(LOG_TAG,"--> allDaysJsonArray length = " + allDaysJsonArray.length() );
-
-                Time dayTime = new Time();
-                dayTime.setToNow();  // ?? what happens here and why, later a new object is created
-                int julianStartDay = Time.getJulianDay(System.currentTimeMillis(), dayTime.gmtoff); // ??
-                dayTime = new Time();
-
-                for(int i = 0; i < allDaysJsonArray.length(); i++) {
-                    JSONObject jsonDayWeather = allDaysJsonArray.getJSONObject(i);
-                    //DayWeather dayWeather = new DayWeather();  // DTO - data transfer object
-
-                    JSONObject jsonTemperatureObject = jsonDayWeather.getJSONObject("temp");
-                    String tempDay = jsonTemperatureObject.getString("day");
-                    double tempDayDouble = Double.parseDouble(tempDay);
-                    tempArray[i] = Math.round(tempDayDouble*10)/10.;
-                    //long tempDayRounded = Math.round(tempDayDouble);
-
-                    // the weather description is hidden in another array with keyword "weather"
-                    // this array has only one JSONObject-field
-                    JSONArray jsonDescriptionArray = jsonDayWeather.getJSONArray("weather");
-                    String description = jsonDescriptionArray.getJSONObject(0).getString("description");
-
-                    long dateTime = dayTime.setJulianDay(julianStartDay+i);
-                    SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE dd. MMM", Locale.GERMAN);
-                    String day = shortenedDateFormat.format(dateTime);
-                    if ( i==0 ) day = "<b>Heute</b>,  ";
-                    if ( i==1 ) day = "Morgen, ";
-
-                    //dayWeather.temp = tempDay;
-                    //dayWeather.description = description;
-                    Log.v(LOG_TAG,"--> day " + i + ":  "  + description + ", " + formatTemperature(tempDayDouble));
-                    //dayWeatherList.add(dayWeather);
-                    forecastArray[i] = " " + day + ":  " + description + ", " + formatTemperature(tempDayDouble);
-                    tempPoint[i] = new DataPoint( i, tempArray[i] );
-                }
-                return forecastArray;
-
-            } catch (IOException e) {
-                Log.e(LOG_TAG, "--> IO exception ", e);
-                // If the code didn't successfully get the weather data,
-                // there's no point in attempting to parse it.
-                return null;
-
-            } catch (JSONException e) {
-                Log.e(LOG_TAG, "--> JSON exception ", e);
-
-            } finally{
-                if (urlConnection != null) {
-                    urlConnection.disconnect();
-                }
-                if (reader != null) {
-                    try {
-                        reader.close();
-                    } catch (final IOException e) {
-                        Log.e(LOG_TAG, "Error closing stream", e);
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(String[] result) {
-        // the argument is automatically what the doInBackground method of AsynchTask returns
-            if (result != null) {
-                myForecastAdapter.clear();
-                for (String day : result) {
-                    // this is, what ultimately triggers the ListView zu update
-                    myForecastAdapter.add(day);
-                    //myForecastAdapter.add(Html.fromHtml(day));
-
-                }
-                series.resetData(tempPoint);
-                diagr.getViewport().setMinY(Math.floor(series.getLowestValueY() - 2));
-                diagr.getViewport().setMaxY(Math.ceil(series.getHighestValueY() + 2));
-            }
-            super.onPostExecute(result);
-        }
-    }
+//    public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
+//        private final String LOG_TAG = FetchWeatherTask.class.getSimpleName();
+//
+//        @Override
+//        protected String[] doInBackground(String... params) {
+//
+//            // These two need to be declared outside the try/catch
+//            // so that they can be closed in the finally block.
+//            HttpURLConnection urlConnection = null;
+//            BufferedReader reader = null;
+//
+//            final String FORECAST_BASE_URL = "http://api.openweathermap.org/data/2.5/forecast/daily?";
+//            final String QUERY_PARAM = "q";
+//            final String LANG_PARAM = "lang";
+//            final String FORMAT_PARAM = "mode";
+//            final String UNIT_PARAM = "units";
+//            final String DAYS_PARAM = "cnt";
+//            // Will contain the raw JSON response as a string.
+//            String forecastJsonStr = null;
+//            String lang = "ru";
+//            String format = "jason";
+//            String units = "metric";
+//            int numDays = 7;
+//
+//            try {
+//                // Construct the URL for the OpenWeatherMap query
+//                // Possible parameters are avaiable at OWM's forecast API page, at
+//                // http://openweathermap.org/API#forecast
+//
+//                Uri builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
+//                        .appendQueryParameter(QUERY_PARAM, params[0])
+//                                // set in zero position of params array, where there is the location
+//                        .appendQueryParameter(LANG_PARAM, params[1])  // language
+//                        .appendQueryParameter(FORMAT_PARAM, format)
+//                        .appendQueryParameter(UNIT_PARAM, units)
+//                        .appendQueryParameter(DAYS_PARAM, Integer.toString(numDays))
+//                        .build();
+//
+//                URL url = new URL(builtUri.toString());
+//                Log.v(LOG_TAG, "--> Built URI: " + url);
+//
+//                // Create the request to OpenWeatherMap, and open the connection
+//                urlConnection = (HttpURLConnection) url.openConnection();
+//                // rolf why a type cast here??
+//                urlConnection.setRequestMethod("GET");
+//                urlConnection.connect();
+//
+//                // Read the input stream into a String
+//                InputStream inputStream = urlConnection.getInputStream();
+//                StringBuffer buffer = new StringBuffer();
+//
+//                if (inputStream == null) {
+//                    // Nothing to do.
+//                    return null;
+//                }
+//
+//                reader = new BufferedReader(new InputStreamReader(inputStream));
+//
+//                String line;
+//                while ( (line = reader.readLine()) != null ) {
+//                    // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
+//                    // But it does make debugging a *lot* easier if you print out the completed
+//                    // buffer for debugging.
+//                    buffer.append(line + "\n");
+//                }
+//
+//                if (buffer.length() == 0) {
+//                    // Stream was empty.  No point in parsing.
+//                    return null;
+//                }
+//
+//                forecastJsonStr = buffer.toString();
+//                Log.v(LOG_TAG, "--> forecastJsonStr: " + forecastJsonStr);
+//
+//                // Pass string data to JSON object
+//                JSONObject forecastJsonObject = new JSONObject(forecastJsonStr);
+//
+//                // Build array; "list" is the keyword in forecastJsonStr where the array follows
+//                JSONArray allDaysJsonArray = forecastJsonObject.getJSONArray("list");
+//
+//                Log.v(LOG_TAG,"--> allDaysJsonArray length = " + allDaysJsonArray.length() );
+//
+//                Time dayTime = new Time();
+//                dayTime.setToNow();  // ?? what happens here and why, later a new object is created
+//                int julianStartDay = Time.getJulianDay(System.currentTimeMillis(), dayTime.gmtoff); // ??
+//                dayTime = new Time();
+//
+//                for(int i = 0; i < allDaysJsonArray.length(); i++) {
+//                    JSONObject jsonDayWeather = allDaysJsonArray.getJSONObject(i);
+//                    //DayWeather dayWeather = new DayWeather();  // DTO - data transfer object
+//
+//                    JSONObject jsonTemperatureObject = jsonDayWeather.getJSONObject("temp");
+//                    String tempDay = jsonTemperatureObject.getString("day");
+//                    double tempDayDouble = Double.parseDouble(tempDay);
+//                    tempArray[i] = Math.round(tempDayDouble*10)/10.;
+//                    //long tempDayRounded = Math.round(tempDayDouble);
+//
+//                    // the weather description is hidden in another array with keyword "weather"
+//                    // this array has only one JSONObject-field
+//                    JSONArray jsonDescriptionArray = jsonDayWeather.getJSONArray("weather");
+//                    String description = jsonDescriptionArray.getJSONObject(0).getString("description");
+//
+//                    long dateTime = dayTime.setJulianDay(julianStartDay+i);
+//                    SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE dd. MMM", Locale.GERMAN);
+//                    String day = shortenedDateFormat.format(dateTime);
+//                    if ( i==0 ) day = "<b>Heute</b>,  ";
+//                    if ( i==1 ) day = "Morgen, ";
+//
+//                    //dayWeather.temp = tempDay;
+//                    //dayWeather.description = description;
+//                    Log.v(LOG_TAG,"--> day " + i + ":  "  + description + ", " + formatTemperature(tempDayDouble));
+//                    //dayWeatherList.add(dayWeather);
+//                    forecastArray[i] = " " + day + ":  " + description + ", " + formatTemperature(tempDayDouble);
+//                    tempPoint[i] = new DataPoint( i, tempArray[i] );
+//                }
+//                return forecastArray;
+//
+//            } catch (IOException e) {
+//                Log.e(LOG_TAG, "--> IO exception ", e);
+//                // If the code didn't successfully get the weather data,
+//                // there's no point in attempting to parse it.
+//                return null;
+//
+//            } catch (JSONException e) {
+//                Log.e(LOG_TAG, "--> JSON exception ", e);
+//
+//            } finally{
+//                if (urlConnection != null) {
+//                    urlConnection.disconnect();
+//                }
+//                if (reader != null) {
+//                    try {
+//                        reader.close();
+//                    } catch (final IOException e) {
+//                        Log.e(LOG_TAG, "Error closing stream", e);
+//                    }
+//                }
+//            }
+//
+//            return null;
+//        }
+//
+//        @Override
+//        protected void onPostExecute(String[] result) {
+//        // the argument is automatically what the doInBackground method of AsynchTask returns
+//            if (result != null) {
+//                myForecastAdapter.clear();
+//                for (String day : result) {
+//                    // this is, what ultimately triggers the ListView zu update
+//                    myForecastAdapter.add(day);
+//                    //myForecastAdapter.add(Html.fromHtml(day));
+//
+//                }
+//                series.resetData(tempPoint);
+//                diagr.getViewport().setMinY(Math.floor(series.getLowestValueY() - 2));
+//                diagr.getViewport().setMaxY(Math.ceil(series.getHighestValueY() + 2));
+//            }
+//            super.onPostExecute(result);
+//        }
+//    }
 }
 
